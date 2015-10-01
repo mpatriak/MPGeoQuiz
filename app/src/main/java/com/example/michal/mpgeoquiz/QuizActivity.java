@@ -1,5 +1,7 @@
 package com.example.michal.mpgeoquiz;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +21,7 @@ public class QuizActivity extends AppCompatActivity
     private Button mTrueButton;
     private Button mFalseButton;
     private ImageButton mNextButton;
+    private Button mCheatButton;
     private ImageButton mPrevButton;
     private TextView mQuestionTextView;
 
@@ -34,6 +37,9 @@ public class QuizActivity extends AppCompatActivity
 
     // Initialization of the array of questions.
     private int mCurrentIndex = 0;
+
+    //  Member variable to hold the value that CheatActivity is passing back.
+    private boolean mIsCheater;
 
     // Private method to update the mQuestionTextView variable.
     private void updateQuestion()
@@ -54,13 +60,21 @@ public class QuizActivity extends AppCompatActivity
 
         int messageResId = 0;
 
-        if (userPressedTrue == answerIsTrue)
+        // Check whether the user cheated and respond appropriately.
+        if (mIsCheater)
         {
-            messageResId = R.string.correct_toast;
+            messageResId = R.string.judgment_toast;
         } else
         {
-            messageResId = R.string.incorrect_toast;
+            if (userPressedTrue == answerIsTrue)
+            {
+                messageResId = R.string.correct_toast;
+            } else
+            {
+                messageResId = R.string.incorrect_toast;
+            }
         }
+
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
     }
@@ -123,12 +137,29 @@ public class QuizActivity extends AppCompatActivity
                 {
                     mCurrentIndex = mQuestionBank.length - 1;
                 }
-
+                mIsCheater = false;
                 updateQuestion();
             }
         });
 
         updateQuestion();
+
+        // Listener for Cheat Button
+        mCheatButton = (Button)findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(new View.OnClickListener()
+        {
+           @Override
+            public void onClick(View v)
+           {
+               //Creates an Intent that includes the CheatActivity class. Then the intent is
+               // passed into startActivity(Intent).
+               Intent i = new Intent(QuizActivity.this, CheatActivity.class);
+               // Extra on the intent.
+               boolean answerIsTrue = mQuestionBank[mCurrentIndex].isTrueQuestion();
+               i.putExtra(CheatActivity.EXTRA_ANSWER_IS_TRUE, answerIsTrue);
+               startActivityForResult(i, 0);
+           }
+        });
 
         mNextButton = (ImageButton)findViewById(R.id.next_button);
         mNextButton.setOnClickListener(new View.OnClickListener()
@@ -137,6 +168,7 @@ public class QuizActivity extends AppCompatActivity
             public void onClick(View v)
             {
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
+                mIsCheater = false;
                 updateQuestion();
             }
 
@@ -149,6 +181,17 @@ public class QuizActivity extends AppCompatActivity
 
         updateQuestion();
     } // End onCreate
+
+    // Override onActivityResult() to retrieve the value that CheatActivity passed back.
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (data == null)
+        {
+            return;
+        }
+        mIsCheater = data.getBooleanExtra(CheatActivity.EXTRA_ANSWER_SHOWN, false);
+    }
 
     // Saves the current question for device rotation.
     @Override
