@@ -1,7 +1,10 @@
 package com.example.michal.mpgeoquiz;
 
+import android.annotation.TargetApi;
+import android.support.v7.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -79,6 +82,7 @@ public class QuizActivity extends AppCompatActivity
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
     }
 
+    @TargetApi(11)
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -87,6 +91,15 @@ public class QuizActivity extends AppCompatActivity
         //Log.d(TAG, "onCreate(Bundle) called");
         // Inflates the view for ActivityQuiz
         setContentView(R.layout.activity_quiz);
+
+        // Creates a subtitle in the action bar that specifies the state I live in after checking
+        // the Android version of the device.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+        {
+            ActionBar actionBar = getSupportActionBar();
+            actionBar.setSubtitle("California");
+        }
+
 
         // Gets a reference for the TextView.
         mQuestionTextView = (TextView)findViewById(R.id.question_text_view);
